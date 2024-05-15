@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  :root {
+    @apply bg-slate-200;
+  }
+
+  .btn__nav__active {
+    @apply border-b-2 px-5 mx-5 text-xl font-bold border-red-800 rounded-lg;
+  }
+  .btn__nav {
+    @apply rounded-lg px-5 mx-5 text-xl;
+  }
+  .input__form {
+    @apply rounded-lg shadow-md focus:ring-azul-oscuro focus:ring-1 border border-gray-300 focus:outline-none py-1 w-full my-2 focus:border-azul-oscuro;
+  }
+  .label__form {
+    @apply block text-gray-700 font-medium;
+  }
+  .btn__form {
+    @apply w-full py-2 border border-transparent bg-azul-oscuro rounded-lg text-white hover:bg-azul-claro mt-4;
+  }
+  .spam_form_error {
+    @apply text-red-800 text-sm font-medium;
+  }
+  h1 {
+    @apply text-2xl text-azul-oscuro font-medium text-center;
+  }
+  .form__section {
+    @apply border-2 mb-1 rounded-lg p-3 border-gray-400;
+  }
+  .btn__list {
+    @apply hover:bg-azul-claro rounded-lg my-1 bg-azul-oscuro uppercase border-y-azul-oscuro border-y-2 text-white font-medium text-lg py-2 w-full text-start pl-4;
+  }
+  .message {
+    @apply text-center font-semibold  text-azul-oscuro;
+  }
+}
