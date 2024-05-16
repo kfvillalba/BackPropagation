@@ -20,10 +20,12 @@ import Swal from "sweetalert2";
 import DeleteIcon from "../assets/DeleteIcon";
 import Grafica from "../components/Grafica";
 import ModalEditEntrenamiento from "../components/ModalEditEntrenamiento";
-
+let iteracionesHistorial = [];
+let erroresIteracionHistorial = [];
 const PaginaEntrenamiento = () => {
   // firebase
   const [formEdit, setformEdit] = useState(false);
+  const [training, setTraining] = useState(false);
   const [dataForm, setDataform] = useState([]);
   useEffect(() => {
     const q = query(collection(db, "IA-DATABASE"));
@@ -89,8 +91,6 @@ const PaginaEntrenamiento = () => {
   let ERS = [];
   let pesos = [];
   let umbrales = [];
-  let iteracionesHistorial = [];
-  let erroresIteracionHistorial = [];
 
   const data = {
     labels: iteracionesHistorial,
@@ -155,14 +155,18 @@ const PaginaEntrenamiento = () => {
   };
 
   function stop(razon) {
-    console.log(razon);
     razon == "Error" ? asignarEntrenado() : 0;
     pause = true;
     count = 1;
+    setTraining(false);
     guardarPesosUmbrales();
   }
+
   function start() {
+    iteracionesHistorial = [];
+    erroresIteracionHistorial = [];
     pause = false;
+    setTraining(true);
     iterarWhile();
   }
   const asignarEntrenado = () => {
@@ -338,8 +342,14 @@ const PaginaEntrenamiento = () => {
                     entradas={dataItem.NumEntradas}
                     salidas={dataItem.NumSalidas}
                   />
+                  {!training ? (
+                    <Grafica data={data} />
+                  ) : (
+                    <h1 className="text-red-800 text-6xl animate-pulse">
+                      ENTRENANDO
+                    </h1>
+                  )}
 
-                  <Grafica data={data} />
                   <div className="flex gap-4">
                     <button
                       onClick={() => {
