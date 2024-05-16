@@ -333,7 +333,11 @@ const PaginaEntrenamiento = () => {
                     </p>
                   </div>
 
-                  <TableDrawer data={dataItem.MatrizInicial} />
+                  <TableDrawer
+                    data={dataItem.MatrizInicial}
+                    entradas={dataItem.NumEntradas}
+                    salidas={dataItem.NumSalidas}
+                  />
 
                   <Grafica data={data} />
                   <div className="flex gap-4">

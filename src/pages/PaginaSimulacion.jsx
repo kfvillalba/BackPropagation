@@ -172,26 +172,28 @@ const PaginaSimulacion = () => {
           <div>
             <div className="form__section">
               <ul>
-                {dataForm.map((item, index) => (
-                  <li key={index}>
-                    <button
-                      value={index}
-                      className="btn__list"
-                      onClick={(e) => {
-                        console.log(dataForm);
-                        SetSelectecItem(e.target.value);
-                        setCsvData(
-                          getPatrones(
-                            dataForm[e.target.value].MatrizInicial,
-                            dataForm[e.target.value].NumEntradas
-                          )
-                        );
-                      }}
-                    >
-                      {item.Nombre}
-                    </button>
-                  </li>
-                ))}
+                {dataForm.map((item, index) =>
+                  item.Entrenada == true ? (
+                    <li key={index}>
+                      <button
+                        value={index}
+                        className="btn__list"
+                        onClick={(e) => {
+                          console.log(dataForm);
+                          SetSelectecItem(e.target.value);
+                          setCsvData(
+                            getPatrones(
+                              dataForm[e.target.value].MatrizInicial,
+                              dataForm[e.target.value].NumEntradas
+                            )
+                          );
+                        }}
+                      >
+                        {item.Nombre}
+                      </button>
+                    </li>
+                  ) : null
+                )}
               </ul>
             </div>
             <div className="form__section">
