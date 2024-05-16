@@ -141,7 +141,7 @@ const PaginaEntrenamiento = () => {
   function stop() {
     pause = true;
     count = 1;
-    //guardarPesosUmbrales();
+    guardarPesosUmbrales();
   }
   function start() {
     pause = false;
@@ -213,7 +213,7 @@ const PaginaEntrenamiento = () => {
             inputs,
             salidasObtenidas
           );
-          console.log(umbrales);
+
           // calculamos los Umbrales nuevos
           umbrales = Umbral.calcularUmbralesNuevos(
             umbrales,
@@ -223,7 +223,7 @@ const PaginaEntrenamiento = () => {
             funcionesActivacion,
             salidasObtenidas
           );
-          console.log(umbrales);
+
           //
         });
         errorIteracion = Error.calcularErrorIteracion(erroresPatron);
