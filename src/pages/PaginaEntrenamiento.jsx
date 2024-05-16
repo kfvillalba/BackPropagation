@@ -154,15 +154,21 @@ const PaginaEntrenamiento = () => {
     return convertirMatrizANumeros(matrizNueva);
   };
 
-  function stop() {
+  function stop(razon) {
+    console.log(razon);
+    razon == "Error" ? asignarEntrenado() : 0;
     pause = true;
     count = 1;
-    //guardarPesosUmbrales();
+    guardarPesosUmbrales();
   }
   function start() {
     pause = false;
     iterarWhile();
   }
+  const asignarEntrenado = () => {
+    const data = { Entrenada: true };
+    updateRed(dataItem.id, data);
+  };
   const guardarPesosUmbrales = () => {
     const data = {
       Pesos: [JSON.stringify(pesos)],
@@ -187,8 +193,11 @@ const PaginaEntrenamiento = () => {
     const rataApendizaje = dataItem.RataApendizaje;
     const errorMaximo = parseFloat(dataItem.ErrorMaximo);
     if (pause == false) {
-      if ((count > iteraciones) | (errorIteracion < errorMaximo)) {
-        stop();
+      if ((count > iteraciones) | (errorIteracion <= errorMaximo)) {
+        let razon = "";
+        count > iteraciones ? (razon = "iteraciones") : 0;
+        errorIteracion <= errorMaximo ? (razon = "Error") : 0;
+        stop(razon);
       } else {
         console.log("Iteracion: ", count);
         inputs.map((inputs, index) => {
@@ -268,7 +277,6 @@ const PaginaEntrenamiento = () => {
             setformEdit(false);
           }}
           editar={(dataEdit) => {
-            console.log(dataEdit);
             updateRed(dataItem.id, dataEdit);
           }}
         />
@@ -287,7 +295,6 @@ const PaginaEntrenamiento = () => {
                       className="btn__list"
                       onClick={(e) => {
                         SetSelectecItem(e.target.value);
-                        console.log(dataForm[e.target.value]);
                       }}
                     >
                       {item.Nombre}

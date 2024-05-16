@@ -383,6 +383,7 @@ const ModalEditEntrenamiento = ({ open, onClose, editar, dataRed }) => {
             <b className="spam_form_error">{errors?.ErrorMaximo?.message}</b>
           </div>
         </div>
+
         <div className="flex gap-3">
           <button type="submit" className="btn__form">
             Enviar
