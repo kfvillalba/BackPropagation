@@ -8,6 +8,7 @@ import {
   onSnapshot,
   query,
   sum,
+  updateDoc,
 } from "firebase/firestore";
 import { db } from "../components/firebase";
 import CalcularSalidas from "../components/CalcularSalidas";
@@ -30,43 +31,15 @@ const PaginaEntrenamiento = () => {
       });
       docArray.map((item) => {
         item.MatrizInicial = JSON.parse(item.MatrizInicial);
-        item.UmbralesInicialesCapa0Capa1 = JSON.parse(
-          item.UmbralesInicialesCapa0Capa1
-        );
+        item.Pesos = JSON.parse(item.Pesos);
+        item.Umbrales = JSON.parse(item.Umbrales);
 
-        item.PesosInicialesCapa0Capa1 = JSON.parse(
-          item.PesosInicialesCapa0Capa1
-        );
-        item.PesosInicialesCapa1Capa2
-          ? (item.PesosInicialesCapa1Capa2 = JSON.parse(
-              item.PesosInicialesCapa1Capa2
-            ))
-          : 0;
-        item.UmbralesInicialesCapa1Capa2
-          ? (item.UmbralesInicialesCapa1Capa2 = JSON.parse(
-              item.UmbralesInicialesCapa1Capa2
-            ))
-          : 0;
-        item.PesosInicialesCapa2Capa3
-          ? (item.PesosInicialesCapa2Capa3 = JSON.parse(
-              item.PesosInicialesCapa2Capa3
-            ))
-          : 0;
-        item.UmbralesInicialesCapa2Capa3
-          ? (item.UmbralesInicialesCapa2Capa3 = JSON.parse(
-              item.UmbralesInicialesCapa2Capa3
-            ))
-          : 0;
-        item.PesosInicialesCapa3Capa4
-          ? (item.PesosInicialesCapa3Capa4 = JSON.parse(
-              item.PesosInicialesCapa3Capa4
-            ))
-          : 0;
-        item.UmbralesInicialesCapa3Capa4
-          ? (item.UmbralesInicialesCapa3Capa4 = JSON.parse(
-              item.UmbralesInicialesCapa3Capa4
-            ))
-          : 0;
+        for (let index = 0; index < item.Pesos.length; index++) {
+          item.Pesos[index] = convertirMatrizANumeros(item.Pesos[index]);
+        }
+        for (let index = 0; index < item.Umbrales.length; index++) {
+          item.Umbrales[index] = convertirArrayANumeros(item.Umbrales[index]);
+        }
       });
       setDataform(docArray);
     });
@@ -74,6 +47,10 @@ const PaginaEntrenamiento = () => {
     return () => unsubscribe();
   }, []);
 
+  const updateRed = (id, data) => {
+    let red = doc(db, "IA-DATABASE", id);
+    updateDoc(red, data);
+  };
   const deleteRed = (id) => {
     let red = doc(db, "IA-DATABASE", id);
     Swal.fire({
@@ -106,6 +83,8 @@ const PaginaEntrenamiento = () => {
   let count = 1;
   let pause = false;
   let ERS = [];
+  let pesos = [];
+  let umbrales = [];
 
   // resultados del entrenamiento
 
@@ -117,7 +96,7 @@ const PaginaEntrenamiento = () => {
 
   //Funciones
   function convertirMatrizANumeros(matriz) {
-    return matriz.map((fila) => fila.map((elemento) => parseFloat(elemento)));
+    return matriz.map((fila) => fila.map((elemento) => Number(elemento)));
   }
 
   function convertirArrayANumeros(matriz) {
@@ -131,59 +110,6 @@ const PaginaEntrenamiento = () => {
     });
 
     return convertirMatrizANumeros(matrizNueva);
-  };
-
-  const getPesos = () => {
-    let pesos = [];
-    dataItem.PesosInicialesCapa3Capa4[0] != ""
-      ? pesos.unshift(
-          convertirMatrizANumeros(dataItem.PesosInicialesCapa3Capa4)
-        )
-      : 0;
-    dataItem.PesosInicialesCapa2Capa3[0] != ""
-      ? pesos.unshift(
-          convertirMatrizANumeros(dataItem.PesosInicialesCapa2Capa3)
-        )
-      : 0;
-    dataItem.PesosInicialesCapa1Capa2[0] != ""
-      ? pesos.unshift(
-          convertirMatrizANumeros(dataItem.PesosInicialesCapa1Capa2)
-        )
-      : 0;
-    dataItem.PesosInicialesCapa0Capa1[0] != ""
-      ? pesos.unshift(
-          convertirMatrizANumeros(dataItem.PesosInicialesCapa0Capa1)
-        )
-      : 0;
-
-    return pesos;
-  };
-
-  const getUmbrales = () => {
-    let umbrales = [];
-
-    dataItem.UmbralesInicialesCapa3Capa4[0] != ""
-      ? umbrales.unshift(
-          convertirArrayANumeros(dataItem.UmbralesInicialesCapa3Capa4)
-        )
-      : 0;
-    dataItem.UmbralesInicialesCapa2Capa3[0] != ""
-      ? umbrales.unshift(
-          convertirArrayANumeros(dataItem.UmbralesInicialesCapa2Capa3)
-        )
-      : 0;
-    dataItem.UmbralesInicialesCapa1Capa2[0] != ""
-      ? umbrales.unshift(
-          convertirArrayANumeros(dataItem.UmbralesInicialesCapa1Capa2)
-        )
-      : 0;
-    dataItem.UmbralesInicialesCapa0Capa1[0] != ""
-      ? umbrales.unshift(
-          convertirArrayANumeros(dataItem.UmbralesInicialesCapa0Capa1)
-        )
-      : 0;
-
-    return umbrales;
   };
 
   const getFuncAct = () => {
@@ -215,17 +141,24 @@ const PaginaEntrenamiento = () => {
   function stop() {
     pause = true;
     count = 1;
+    //guardarPesosUmbrales();
   }
   function start() {
     pause = false;
     iterarWhile();
   }
-  let pesos = [];
-  let umbrales = [];
+  const guardarPesosUmbrales = () => {
+    const data = {
+      Pesos: [JSON.stringify(pesos)],
+      Umbrales: [JSON.stringify(umbrales)],
+    };
+    updateRed(dataItem.id, data);
+  };
+
   const iterarWhile = () => {
     if (count == 1) {
-      pesos = getPesos();
-      umbrales = getUmbrales();
+      pesos = dataItem.Pesos;
+      umbrales = dataItem.Umbrales;
     }
 
     let funcionesActivacion = getFuncAct();
@@ -244,6 +177,7 @@ const PaginaEntrenamiento = () => {
         console.log("Iteracion: ", count);
         inputs.map((inputs, index) => {
           // Calculamos las salidas
+
           salidasObtenidas = CalcularSalidas(
             pesos,
             umbrales,
@@ -279,7 +213,7 @@ const PaginaEntrenamiento = () => {
             inputs,
             salidasObtenidas
           );
-
+          console.log(umbrales);
           // calculamos los Umbrales nuevos
           umbrales = Umbral.calcularUmbralesNuevos(
             umbrales,
@@ -289,6 +223,7 @@ const PaginaEntrenamiento = () => {
             funcionesActivacion,
             salidasObtenidas
           );
+          console.log(umbrales);
           //
         });
         errorIteracion = Error.calcularErrorIteracion(erroresPatron);
@@ -320,6 +255,7 @@ const PaginaEntrenamiento = () => {
                       className="btn__list"
                       onClick={(e) => {
                         SetSelectecItem(e.target.value);
+                        console.log(dataForm[e.target.value]);
                       }}
                     >
                       {item.Nombre}

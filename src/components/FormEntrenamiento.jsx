@@ -76,54 +76,51 @@ const FormEntrenamiento = () => {
     data.funcionActivacionCapa3 ? 0 : (data.funcionActivacionCapa3 = 0);
     data.numNeuronasCapa2 ? 0 : (data.numNeuronasCapa2 = 0);
     data.numNeuronasCapa3 ? 0 : (data.numNeuronasCapa3 = 0);
-    const pesosInicialesCapa0Capa1 = generarEstructura(
-      data.numNeuronasCapa1,
-      data.Entradas,
-      -1,
-      1
+
+    let pesos = [];
+    let umbrales = [];
+    pesos.push(generarEstructura(data.numNeuronasCapa1, data.Entradas, -1, 1));
+    pesos.push(
+      generarEstructura(
+        data.numNeuronasCapa2 == 0 ? data.Salidas : data.numNeuronasCapa2,
+        data.numNeuronasCapa1,
+        -1,
+        1
+      )
     );
-    const umbralesInicialesCapa0Capa1 = generarEstructura(
-      data.numNeuronasCapa1,
-      1,
-      -1,
-      1
+    pesos.push(
+      generarEstructura(
+        data.numNeuronasCapa3 == 0 ? data.Salidas : data.numNeuronasCapa3,
+        data.numNeuronasCapa2,
+        -1,
+        1
+      )
     );
-    const pesosInicialesCapa1Capa2 = generarEstructura(
-      data.numNeuronasCapa2 == 0 ? data.Salidas : data.numNeuronasCapa2,
-      data.numNeuronasCapa1,
-      -1,
-      1
+    pesos.push(generarEstructura(data.Salidas, data.numNeuronasCapa3, -1, 1));
+
+    umbrales.push(generarEstructura(data.numNeuronasCapa1, 1, -1, 1));
+    umbrales.push(
+      generarEstructura(
+        data.numNeuronasCapa2 == 0 ? data.Salidas : data.numNeuronasCapa2,
+        data.numNeuronasCapa1 != 0 ? 1 : 0,
+        -1,
+        1
+      )
     );
-    const umbralesInicialesCapa1Capa2 = generarEstructura(
-      data.numNeuronasCapa2 == 0 ? data.Salidas : data.numNeuronasCapa2,
-      data.numNeuronasCapa1 != 0 ? 1 : 0,
-      -1,
-      1
+    umbrales.push(
+      generarEstructura(
+        data.numNeuronasCapa3 == 0 ? data.Salidas : data.numNeuronasCapa3,
+        data.numNeuronasCapa2 != 0 ? 1 : 0,
+        -1,
+        1
+      )
     );
-    const pesosInicialesCapa2Capa3 = generarEstructura(
-      data.numNeuronasCapa3 == 0 ? data.Salidas : data.numNeuronasCapa3,
-      data.numNeuronasCapa2,
-      -1,
-      1
+    umbrales.push(
+      generarEstructura(data.Salidas, data.numNeuronasCapa3 != 0 ? 1 : 0, -1, 1)
     );
-    const umbralesInicialesCapa2Capa3 = generarEstructura(
-      data.numNeuronasCapa3 == 0 ? data.Salidas : data.numNeuronasCapa3,
-      data.numNeuronasCapa2 != 0 ? 1 : 0,
-      -1,
-      1
-    );
-    const pesosInicialesCapa3Capa4 = generarEstructura(
-      data.Salidas,
-      data.numNeuronasCapa3,
-      -1,
-      1
-    );
-    const umbralesInicialesCapa3Capa4 = generarEstructura(
-      data.Salidas,
-      data.numNeuronasCapa3 != 0 ? 1 : 0,
-      -1,
-      1
-    );
+    let cantidad = data.NumCapas + 1;
+    pesos = pesos.splice(0, cantidad);
+    umbrales = umbrales.splice(0, cantidad);
 
     /*   setpesosIniciales(pesosInicialesData);
     setumbralInicial(umbralInicialData); */
@@ -146,17 +143,10 @@ const FormEntrenamiento = () => {
       NumIteraciones: data.Iteraciones,
       ErrorMaximo: data.ErrorMaximo,
       MatrizInicial: JSON.stringify(csvData),
-      PesosInicialesCapa0Capa1: JSON.stringify(pesosInicialesCapa0Capa1),
-      UmbralesInicialesCapa0Capa1: JSON.stringify(umbralesInicialesCapa0Capa1),
-      PesosInicialesCapa1Capa2: JSON.stringify(pesosInicialesCapa1Capa2),
-      UmbralesInicialesCapa1Capa2: JSON.stringify(umbralesInicialesCapa1Capa2),
-      PesosInicialesCapa2Capa3: JSON.stringify(pesosInicialesCapa2Capa3),
-      UmbralesInicialesCapa2Capa3: JSON.stringify(umbralesInicialesCapa2Capa3),
-      PesosInicialesCapa3Capa4: JSON.stringify(pesosInicialesCapa3Capa4),
-      UmbralesInicialesCapa3Capa4: JSON.stringify(umbralesInicialesCapa3Capa4),
+      Pesos: JSON.stringify(pesos),
+      Umbrales: JSON.stringify(umbrales),
       Entrenada: false,
     });
-    console.log(data);
 
     Navigate("/entrenamiento");
     reset();
@@ -327,6 +317,7 @@ const FormEntrenamiento = () => {
             <select
               {...register("NumCapas", {
                 required: "Campo Obligatorio",
+                valueAsNumber: true,
               })}
               onChange={handleCapas}
               className="input__form"

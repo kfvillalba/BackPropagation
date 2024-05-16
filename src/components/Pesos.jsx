@@ -61,9 +61,9 @@ const calcularPesosNuevos = (
             "+",
             2 * rataApendizaje,
             "*",
-            derivada,
-            "*",
             errorNolineal[col],
+            "*",
+            derivada,
             "*",
             entradas[fila]
           ); */

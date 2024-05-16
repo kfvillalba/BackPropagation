@@ -18,7 +18,6 @@ const calcularUmbralesNuevos = (
     let errorNolineal = erroresNoLineales[numUmbral];
     for (let index = 0; index < umbral.length; index++) {
       let derivada = 0;
-
       switch (funcAct) {
         case "Sigmoid":
           derivada = FuncAct.sigmoidDerivada(salidas[index]);
