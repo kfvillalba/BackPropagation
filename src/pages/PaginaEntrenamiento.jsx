@@ -1,12 +1,22 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import TableDrawer from "../components/TableDrawer";
-import { collection, onSnapshot, query, sum } from "firebase/firestore";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  query,
+  sum,
+} from "firebase/firestore";
 import { db } from "../components/firebase";
 import CalcularSalidas from "../components/CalcularSalidas";
 import Error from "../components/Error";
 import Pesos from "../components/Pesos";
 import Umbral from "../components/Umbral";
+import EditIcon from "../assets/EditIcon";
+import Swal from "sweetalert2";
+import DeleteIcon from "../assets/DeleteIcon";
 
 const PaginaEntrenamiento = () => {
   // firebase
@@ -63,6 +73,28 @@ const PaginaEntrenamiento = () => {
 
     return () => unsubscribe();
   }, []);
+
+  const deleteRed = (id) => {
+    let red = doc(db, "IA-DATABASE", id);
+    Swal.fire({
+      title: "¿Estas Seguro?",
+      text: "No podras recuperar esta red!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Si, borra la Red!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: "Red Borrada!",
+          text: "La red ha sido borrada.",
+          icon: "success",
+        });
+        deleteDoc(red);
+      }
+    });
+  };
 
   //variables useState
 
@@ -282,7 +314,7 @@ const PaginaEntrenamiento = () => {
             <div className="form__section">
               <ul>
                 {dataForm.map((item, index) => (
-                  <li key={index}>
+                  <li className="flex gap-1" key={index}>
                     <button
                       value={index}
                       className="btn__list"
@@ -291,6 +323,17 @@ const PaginaEntrenamiento = () => {
                       }}
                     >
                       {item.Nombre}
+                    </button>
+                    <button className="btn__list p-0 text-center w-12">
+                      <EditIcon clases={"size-5"} />
+                    </button>
+                    <button
+                      onClick={() => {
+                        deleteRed(dataForm[index].id);
+                      }}
+                      className="btn__list p-0 text-center w-12"
+                    >
+                      <DeleteIcon clases={"size-5"} />
                     </button>
                   </li>
                 ))}
