@@ -19,9 +19,11 @@ import EditIcon from "../assets/EditIcon";
 import Swal from "sweetalert2";
 import DeleteIcon from "../assets/DeleteIcon";
 import Grafica from "../components/Grafica";
+import ModalEditEntrenamiento from "../components/ModalEditEntrenamiento";
 
 const PaginaEntrenamiento = () => {
   // firebase
+  const [formEdit, setformEdit] = useState(false);
   const [dataForm, setDataform] = useState([]);
   useEffect(() => {
     const q = query(collection(db, "IA-DATABASE"));
@@ -79,6 +81,7 @@ const PaginaEntrenamiento = () => {
   const [selectedItem, SetSelectecItem] = useState(-1);
 
   //variables
+
   const dataItem = dataForm[selectedItem];
   let errorIteracion = 1;
   let count = 1;
@@ -86,8 +89,8 @@ const PaginaEntrenamiento = () => {
   let ERS = [];
   let pesos = [];
   let umbrales = [];
-  let iteracionesHistorial = [1, 2];
-  let erroresIteracionHistorial = [1, 2];
+  let iteracionesHistorial = [];
+  let erroresIteracionHistorial = [];
 
   const data = {
     labels: iteracionesHistorial,
@@ -239,6 +242,7 @@ const PaginaEntrenamiento = () => {
 
           //
         });
+
         errorIteracion = Error.calcularErrorIteracion(erroresPatron);
         erroresPatron = [];
         erroresNoLineales = [];
@@ -246,7 +250,6 @@ const PaginaEntrenamiento = () => {
         erroresIteracionHistorial.push(errorIteracion);
         iteracionesHistorial.push(count);
         console.log(errorIteracion);
-
         count++;
       }
       setTimeout(iterarWhile, 1);
@@ -257,6 +260,20 @@ const PaginaEntrenamiento = () => {
 
   return (
     <div>
+      {dataItem && (
+        <ModalEditEntrenamiento
+          open={formEdit}
+          dataRed={dataItem}
+          onClose={() => {
+            setformEdit(false);
+          }}
+          editar={(dataEdit) => {
+            console.log(dataEdit);
+            updateRed(dataItem.id, dataEdit);
+          }}
+        />
+      )}
+
       <Navbar />
       <div className=" p-3 border-2 border-azul-oscuro lg:w-1/2 sm:w-full m-3 mx-auto rounded-lg">
         {dataForm ? (
@@ -275,7 +292,13 @@ const PaginaEntrenamiento = () => {
                     >
                       {item.Nombre}
                     </button>
-                    <button className="btn__list p-0 text-center w-12">
+                    <button
+                      onClick={(e) => {
+                        setformEdit(true);
+                        SetSelectecItem(index);
+                      }}
+                      className="btn__list p-0 text-center w-12"
+                    >
                       <EditIcon clases={"size-5"} />
                     </button>
                     <button
@@ -291,7 +314,7 @@ const PaginaEntrenamiento = () => {
               </ul>
             </div>
             <div className="form__section">
-              {selectedItem != -1 ? (
+              {dataItem ? (
                 <div>
                   <h1 className="text-center">Dataset</h1>
                   <div className="flex justify-evenly w-full">

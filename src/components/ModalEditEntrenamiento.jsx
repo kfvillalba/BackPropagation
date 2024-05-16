@@ -1,22 +1,38 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import { collection, addDoc, collectionGroup } from "firebase/firestore";
-import { db } from "./firebase";
-
-const FormEntrenamiento = () => {
+const ModalEditEntrenamiento = ({ open, onClose, editar, dataRed }) => {
   const Navigate = useNavigate();
-  const collectionForm = collection(db, "dataForm");
-
   const {
     register,
     handleSubmit,
     reset,
-    watch,
     formState: { errors },
   } = useForm();
-  const [numCapas, setNumCapas] = useState([1]);
-  const [csvData, setCsvData] = useState([]);
+
+  const handleNumCapas = (numCapas) => {
+    let array = [];
+    for (let index = 0; index < numCapas; index++) {
+      array.push(index + 1);
+    }
+    return array;
+  };
+  let numNueronas = [
+    dataRed.NumNeuronasCapa1,
+    dataRed.NumNeuronasCapa2,
+    dataRed.NumNeuronasCapa3,
+  ];
+  let FuncionesActivacionCapasOcultas = [
+    dataRed.FunActivacionCapa1,
+    dataRed.FunActivacionCapa2,
+    dataRed.FunActivacionCapa3,
+  ];
+
+  const [numCapas, setNumCapas] = useState(
+    handleNumCapas(dataRed.NumCapasOcultas)
+  );
+
   function getRandomArbitrary(min, max) {
     return parseFloat(Math.random() * (max - min) + min).toFixed(1);
   }
@@ -33,35 +49,6 @@ const FormEntrenamiento = () => {
     return estructura;
   }
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-
-    if (file) {
-      const reader = new FileReader();
-
-      reader.onload = (e) => {
-        const csvText = e.target.result;
-        parseCSV(csvText);
-      };
-
-      reader.readAsText(file);
-    }
-  };
-
-  const parseCSV = (csvText) => {
-    const lines = csvText.trim().split("\n");
-
-    const parsedData = [];
-
-    for (let j = 0; j < lines.length; j++) {
-      const valores = lines[j].trim().split(",");
-      const row = valores.map((valor) => Number(valor));
-      parsedData.push(row);
-    }
-
-    setCsvData(parsedData);
-  };
-
   const handleCapas = (event) => {
     let array = [];
     for (let index = 0; index < event.target.value; index++) {
@@ -69,109 +56,85 @@ const FormEntrenamiento = () => {
     }
     setNumCapas(array);
   };
-  const onSubmit = async (data) => {
-    data.funcionActivacionCapa2 ? 0 : (data.funcionActivacionCapa2 = 0);
-    data.funcionActivacionCapa3 ? 0 : (data.funcionActivacionCapa3 = 0);
-    data.numNeuronasCapa2 ? 0 : (data.numNeuronasCapa2 = 0);
-    data.numNeuronasCapa3 ? 0 : (data.numNeuronasCapa3 = 0);
+
+  const onSubmit = (data) => {
+    data.FunActivacionCapa2 ? 0 : (data.FunActivacionCapa2 = 0);
+    data.FunActivacionCapa3 ? 0 : (data.FunActivacionCapa3 = 0);
+    data.NumNeuronasCapa2 ? 0 : (data.NumNeuronasCapa2 = 0);
+    data.NumNeuronasCapa3 ? 0 : (data.NumNeuronasCapa3 = 0);
 
     let pesos = [];
     let umbrales = [];
-    pesos.push(generarEstructura(data.numNeuronasCapa1, data.Entradas, -1, 1));
+    pesos.push(
+      generarEstructura(data.NumNeuronasCapa1, data.NumEntradas, -1, 1)
+    );
     pesos.push(
       generarEstructura(
-        data.numNeuronasCapa2 == 0 ? data.Salidas : data.numNeuronasCapa2,
-        data.numNeuronasCapa1,
+        data.NumNeuronasCapa2 == 0 ? data.NumSalidas : data.NumNeuronasCapa2,
+        data.NumNeuronasCapa1,
         -1,
         1
       )
     );
     pesos.push(
       generarEstructura(
-        data.numNeuronasCapa3 == 0 ? data.Salidas : data.numNeuronasCapa3,
-        data.numNeuronasCapa2,
+        data.NumNeuronasCapa3 == 0 ? data.NumSalidas : data.NumNeuronasCapa3,
+        data.NumNeuronasCapa2,
         -1,
         1
       )
     );
-    pesos.push(generarEstructura(data.Salidas, data.numNeuronasCapa3, -1, 1));
+    pesos.push(
+      generarEstructura(data.NumSalidas, data.NumNeuronasCapa3, -1, 1)
+    );
 
-    umbrales.push(generarEstructura(data.numNeuronasCapa1, 1, -1, 1));
+    umbrales.push(generarEstructura(data.NumNeuronasCapa1, 1, -1, 1));
     umbrales.push(
       generarEstructura(
-        data.numNeuronasCapa2 == 0 ? data.Salidas : data.numNeuronasCapa2,
-        data.numNeuronasCapa1 != 0 ? 1 : 0,
+        data.NumNeuronasCapa2 == 0 ? data.NumSalidas : data.NumNeuronasCapa2,
+        data.NumNeuronasCapa1 != 0 ? 1 : 0,
         -1,
         1
       )
     );
     umbrales.push(
       generarEstructura(
-        data.numNeuronasCapa3 == 0 ? data.Salidas : data.numNeuronasCapa3,
-        data.numNeuronasCapa2 != 0 ? 1 : 0,
+        data.NumNeuronasCapa3 == 0 ? data.NumSalidas : data.NumNeuronasCapa3,
+        data.NumNeuronasCapa2 != 0 ? 1 : 0,
         -1,
         1
       )
     );
     umbrales.push(
-      generarEstructura(data.Salidas, data.numNeuronasCapa3 != 0 ? 1 : 0, -1, 1)
+      generarEstructura(
+        data.NumSalidas,
+        data.NumNeuronasCapa3 != 0 ? 1 : 0,
+        -1,
+        1
+      )
     );
-    let cantidad = data.NumCapas + 1;
+    let cantidad = data.NumCapasOcultas + 1;
     pesos = pesos.splice(0, cantidad);
     umbrales = umbrales.splice(0, cantidad);
 
-    /*   setpesosIniciales(pesosInicialesData);
-    setumbralInicial(umbralInicialData); */
+    data.Pesos = JSON.stringify(pesos);
+    data.Umbrales = JSON.stringify(umbrales);
 
-    await addDoc(collection(db, "IA-DATABASE"), {
-      Nombre: data.Nombre,
-      NumEntradas: data.Entradas,
-      // FuncionActivacionEntrada: data.funcionActivacionEntrada,
-      NumSalidas: data.Salidas,
-      FuncionActivacionSalida: data.funcionActivacionSalida,
-      NumPatrones: data.Patrones,
-      RataApendizaje: data.RataApendizaje,
-      NumCapasOcultas: data.NumCapas,
-      NumNeuronasCapa1: data.numNeuronasCapa1,
-      FunActivacionCapa1: data.funcionActivacionCapa1,
-      NumNeuronasCapa2: data.numNeuronasCapa2,
-      FunActivacionCapa2: data.funcionActivacionCapa2,
-      NumNeuronasCapa3: data.numNeuronasCapa3,
-      FunActivacionCapa3: data.funcionActivacionCapa3,
-      NumIteraciones: data.Iteraciones,
-      ErrorMaximo: data.ErrorMaximo,
-      MatrizInicial: JSON.stringify(csvData),
-      Pesos: JSON.stringify(pesos),
-      Umbrales: JSON.stringify(umbrales),
-      Entrenada: false,
-    });
+    onClose();
+    editar(data);
 
     Navigate("/entrenamiento");
     reset();
   };
 
+  if (!open) return null;
   return (
-    <div>
+    <div className="fixed w-screen top-0 left-0 h-screen z-10 flex items-center justify-center bg-black/50">
       <form
-        className="p-1 mt-5 lg:w-1/2 md:w-full mx-auto border-2 border-azul-oscuro rounded-lg"
+        className="py-5 px-2 lg:w-1/2 w-full h-full overflow-y-auto mx-auto border-2 bg-slate-100 border-azul-oscuro rounded-lg"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <div className="form__section">
-          <h1 className="text-center mb-3">Cargar o Generar Datos</h1>
-          <div className="Subir_Datos">
-            <label className="label__form" htmlFor="user_avatar">
-              Subir datos
-            </label>
-            <input
-              onChange={handleFileChange}
-              accept=".csv"
-              className="block w-full py-1 text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-              aria-describedby="user_avatar_help"
-              id="user_avatar"
-              type="file"
-            />
-          </div>
-        </div>
+        <h1 className="text-center mb-3">Editar la red "{dataRed.Nombre}"</h1>
         <div className="form__section">
           <h1 className="text-center mb-3">Parametros de inicalizacion</h1>
           <div className="Nombre">
@@ -179,6 +142,7 @@ const FormEntrenamiento = () => {
               Nombre del entrenamiento.
             </label>
             <input
+              defaultValue={dataRed.Nombre}
               onWheel={(e) => e.target.blur()}
               id="Nombre"
               className="input__form"
@@ -187,69 +151,52 @@ const FormEntrenamiento = () => {
                 required: "Campo Obligatorio",
               })}
             />
-            <b className="spam_form_error">{errors?.Entradas?.message}</b>
+            <b className="spam_form_error">{errors?.Nombre?.message}</b>
           </div>
-          <div className="Entradas">
-            <label htmlFor="Entradas" className="label__form ">
+          <div className="NumEntradas">
+            <label htmlFor="NumEntradas" className="label__form ">
               Entradas.
             </label>
             <input
+              defaultValue={dataRed.NumEntradas}
               onWheel={(e) => e.target.blur()}
-              id="Entradas"
+              id="NumEntradas"
               className="input__form"
               type="number"
-              {...register("Entradas", {
+              {...register("NumEntradas", {
                 valueAsNumber: true,
                 required: "Campo Obligatorio",
                 min: { value: 0, message: "Minimo 1 Entrada" },
               })}
             />
-            <b className="spam_form_error">{errors?.Entradas?.message}</b>
+            <b className="spam_form_error">{errors?.NumEntradas?.message}</b>
           </div>
-          {/*           <div className="funcionActivacionEntrada">
-            <label className="label__form" htmlFor="funcionActivacionEntrada">
-              Funcion de Activacion de la Capa de Entrada
-            </label>
-            <select
-              {...register("funcionActivacionEntrada", {
-                required: "Campo Obligatorio",
-                min: {
-                  value: 1,
-                  message: "Seleccione una Funcion de Activacion",
-                },
-              })}
-              className="input__form"
-              id="funcionActivacionEntrada"
-            >
-              <option value="0">Seleccione una Funcion de Activacion</option>
-              <option value="Sigmoid">Sigmoide</option>
-              <option value="Tanh">Tangente hiperbólica o Gaussiana</option>
-              <option value="ReLU">Lineal</option>
-            </select>
-          </div> */}
-          <div className="Salidas">
-            <label htmlFor="Salidas" className="label__form ">
+
+          <div className="NumSalidas">
+            <label htmlFor="NumSalidas" className="label__form ">
               Salidas.
             </label>
             <input
+              defaultValue={dataRed.NumSalidas}
               onWheel={(e) => e.target.blur()}
-              id="Salidas"
+              id="NumSalidas"
               className="input__form"
               type="number"
-              {...register("Salidas", {
+              {...register("NumSalidas", {
                 valueAsNumber: true,
                 required: "Campo Obligatorio",
                 min: { value: 0, message: "Minimo 1 salida" },
               })}
             />
-            <b className="spam_form_error">{errors?.Salidas?.message}</b>
+            <b className="spam_form_error">{errors?.NumSalidas?.message}</b>
           </div>
-          <div className="funcionActivacionSalida">
-            <label className="label__form" htmlFor="funcionActivacionSalida">
+          <div className="FuncionActivacionSalida">
+            <label className="label__form" htmlFor="FuncionActivacionSalida">
               Funcion de Activacion de la Capa de Salida
             </label>
             <select
-              {...register("funcionActivacionSalida", {
+              defaultValue={dataRed.FuncionActivacionSalida}
+              {...register("FuncionActivacionSalida", {
                 required: "Campo Obligatorio",
                 min: {
                   value: 1,
@@ -266,28 +213,30 @@ const FormEntrenamiento = () => {
               <option value="ReLu">Lineal</option>
             </select>
           </div>
-          <div className="Patrones">
-            <label htmlFor="Patrones" className="label__form ">
+          <div className="NumPatrones">
+            <label htmlFor="NumPatrones" className="label__form ">
               Patrones.
             </label>
             <input
+              defaultValue={dataRed.NumPatrones}
               onWheel={(e) => e.target.blur()}
-              id="Patrones"
+              id="NumPatrones"
               className="input__form"
               type="number"
-              {...register("Patrones", {
+              {...register("NumPatrones", {
                 valueAsNumber: true,
                 required: "Campo Obligatorio",
                 min: { value: 0.00001, message: "Minimo 1 patron" },
               })}
             />
-            <b className="spam_form_error">{errors?.Patrones?.message}</b>
+            <b className="spam_form_error">{errors?.NumPatrones?.message}</b>
           </div>
           <div className="RataApendizaje">
             <label htmlFor="RataApendizaje" className="label__form ">
               Rata de Apendizaje.
             </label>
             <input
+              defaultValue={dataRed.RataApendizaje}
               onWheel={(e) => e.target.blur()}
               step={0.1}
               id="RataApendizaje"
@@ -296,7 +245,10 @@ const FormEntrenamiento = () => {
               {...register("RataApendizaje", {
                 valueAsNumber: true,
                 required: "Campo Obligatorio",
-                min: { value: 0.0000001, message: "Tiene que ser mayor que 0" },
+                min: {
+                  value: 0.0000001,
+                  message: "Tiene que ser mayor que 0",
+                },
                 max: {
                   value: 0.9999999,
                   message: "Tiene que ser menor que 1 ",
@@ -308,58 +260,62 @@ const FormEntrenamiento = () => {
         </div>
         <div className="form__section">
           <h1 className="text-center mb-3">Configuracion de la Red</h1>
-          <div className="#deCapasOcultas">
-            <label className="label__form" htmlFor="NumCapas">
+          <div className="NumCapasOcultas">
+            <label className="label__form" htmlFor="NumCapasOcultas">
               Seleccione el Numero de Capas Ocultas
             </label>
             <select
-              {...register("NumCapas", {
+              defaultValue={dataRed.NumCapasOcultas}
+              {...register("NumCapasOcultas", {
                 required: "Campo Obligatorio",
                 valueAsNumber: true,
               })}
               onChange={handleCapas}
               className="input__form"
-              id="NumCapas"
-              defaultValue={1}
+              id="NumCapasOcultas"
             >
               <option value={1}>1 Capa</option>
               <option value={2}>2 Capas</option>
               <option value={3}>3 Capas</option>
             </select>
-            <b className="spam_form_error">{errors?.NumCapas?.message}</b>
+            <b className="spam_form_error">
+              {errors?.NumCapasOcultas?.message}
+            </b>
             {numCapas.map((e, i) => (
               <div key={e} className="form__section">
                 <h2 className="text-center font-semibold">
                   {`Configuracion Capa Oculta ${e}`}
                 </h2>
-                <div className={`numNeuronasCapa${e}`}>
+                <div className={`NumNeuronasCapa${e}`}>
                   <label
-                    htmlFor={`numNeuronasCapa${e}`}
+                    htmlFor={`NumNeuronasCapa${e}`}
                     className="label__form "
                   >
                     {`Numero de Neuronas`}
                   </label>
                   <input
+                    defaultValue={numNueronas[i]}
                     onWheel={(e) => e.target.blur()}
-                    id={`numNeuronasCapa${e}`}
+                    id={`NumNeuronasCapa${e}`}
                     className="input__form"
                     type="number"
-                    {...register(`numNeuronasCapa${e}`, {
+                    {...register(`NumNeuronasCapa${e}`, {
                       valueAsNumber: true,
                       required: "Campo Obligatorio",
                       min: { value: 0, message: "Minimo 1 iteracion" },
                     })}
                   />
                 </div>
-                <div className={`funcionActivacionCapa${e}`}>
+                <div className={`FunActivacionCapa${e}`}>
                   <label
                     className="label__form"
-                    htmlFor={`funcionActivacionCapa${e}`}
+                    htmlFor={`FunActivacionCapa${e}`}
                   >
                     {`Funcion de Activacion`}
                   </label>
                   <select
-                    {...register(`funcionActivacionCapa${e}`, {
+                    defaultValue={FuncionesActivacionCapasOcultas[i]}
+                    {...register(`FunActivacionCapa${e}`, {
                       required: "Campo Obligatorio",
                       min: {
                         value: 1,
@@ -367,7 +323,7 @@ const FormEntrenamiento = () => {
                       },
                     })}
                     className="input__form"
-                    id={`funcionActivacionCapa${e}`}
+                    id={`FunActivacionCapa${e}`}
                   >
                     <option value="0">
                       Seleccione una Funcion de Activacion
@@ -385,22 +341,23 @@ const FormEntrenamiento = () => {
         </div>
         <div className="form__section">
           <h1 className="text-center mb-3">Parametros de Finalizacion</h1>
-          <div className="Iteraciones">
-            <label htmlFor="Iteraciones" className="label__form ">
+          <div className="NumIteraciones">
+            <label htmlFor="NumIteraciones" className="label__form ">
               Iteraciones.
             </label>
             <input
+              defaultValue={dataRed.NumIteraciones}
               onWheel={(e) => e.target.blur()}
-              id="Iteraciones"
+              id="NumIteraciones"
               className="input__form"
               type="number"
-              {...register("Iteraciones", {
+              {...register("NumIteraciones", {
                 valueAsNumber: true,
                 required: "Campo Obligatorio",
                 min: { value: 0, message: "Minimo 1 iteracion" },
               })}
             />
-            <b className="spam_form_error">{errors?.Iteraciones?.message}</b>
+            <b className="spam_form_error">{errors?.NumIteraciones?.message}</b>
           </div>
           <div className="ErrorMaximo">
             <label htmlFor="ErrorMaximo" className="label__form ">
@@ -411,6 +368,7 @@ const FormEntrenamiento = () => {
               id="ErrorMaximo"
               className="input__form"
               type="number"
+              defaultValue={dataRed.ErrorMaximo}
               step={0.0000000001}
               {...register("ErrorMaximo", {
                 required: "Campo Obligatorio",
@@ -425,13 +383,23 @@ const FormEntrenamiento = () => {
             <b className="spam_form_error">{errors?.ErrorMaximo?.message}</b>
           </div>
         </div>
-
-        <button type="submit" className="btn__form">
-          Enviar
-        </button>
+        <div className="flex gap-3">
+          <button type="submit" className="btn__form">
+            Enviar
+          </button>
+          <button
+            onClick={() => {
+              onClose();
+              reset();
+            }}
+            className="btn__form"
+          >
+            Cancelar
+          </button>
+        </div>
       </form>
     </div>
   );
 };
 
-export default FormEntrenamiento;
+export default ModalEditEntrenamiento;
