@@ -20,6 +20,7 @@ const CalcularSalidas = (
       }
       suma -= umbral[col];
       let salida;
+
       switch (funcAct) {
         case "Sigmoid":
           salida = FuncAct.Sigmoid(suma);
@@ -27,7 +28,7 @@ const CalcularSalidas = (
         case "Tanh":
           salida = FuncAct.Tanh(suma);
           break;
-        case "ReLU":
+        case "ReLu":
           salida = FuncAct.ReLu(suma);
           break;
         case "Sin":

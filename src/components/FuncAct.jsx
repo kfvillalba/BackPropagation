@@ -11,7 +11,7 @@ function tanhDerivada(x) {
   return 1 - x * x;
 }
 const ReLu = (x) => {
-  return Math.max(0, x);
+  return x >= 0 ? x : 0;
 };
 function reluDerivada(x) {
   return x < 0 ? 0 : 1;

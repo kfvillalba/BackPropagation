@@ -275,7 +275,7 @@ const FormEntrenamiento = () => {
               <option value="Sigmoid">Sigmoide</option>
               <option value="Tanh">Tangente hiperbólica o Gaussiana</option>
               <option value="Sin">Seno</option>
-              <option value="ReLU">Lineal</option>
+              <option value="ReLu">Lineal</option>
             </select>
           </div>
           <div className="Patrones">
