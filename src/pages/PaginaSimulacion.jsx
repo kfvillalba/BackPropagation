@@ -8,10 +8,12 @@ import Umbral from "../components/Umbral";
 import Pesos from "../components/Pesos";
 import Error from "../components/Error";
 import CalcularSalidas from "../components/CalcularSalidas";
-
+let dataResultados = [];
+let salidaTabla = [];
 const PaginaSimulacion = () => {
   // firebase
   const [dataForm, setDataform] = useState([]);
+
   useEffect(() => {
     const q = query(collection(db, "IA-DATABASE"));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -38,15 +40,12 @@ const PaginaSimulacion = () => {
   }, []);
 
   //variables useState
-
+  const [verResultados, SetVerResultados] = useState(false);
   const [selectedItem, SetSelectecItem] = useState(-1);
   const [csvData, setCsvData] = useState([]);
 
   //variables
   const dataItem = dataForm[selectedItem];
-
-  let count = 1;
-  let pause = false;
   let pesos = [];
   let umbrales = [];
   // resultados del entrenamiento
@@ -107,8 +106,7 @@ const PaginaSimulacion = () => {
       dataItem.MatrizInicial,
       dataItem.NumEntradas
     );
-
-    inputs.map((inputs, index) => {
+    inputs.map((inputs) => {
       // Calculamos las salidas
       salidasObtenidas = CalcularSalidas(
         pesos,
@@ -116,8 +114,12 @@ const PaginaSimulacion = () => {
         inputs,
         funcionesActivacion
       );
-      console.log("Obtenido:", salidasObtenidas[salidasObtenidas.length - 1]);
-      console.log("Esperado:", salidasEsperadas[index]);
+      salidaTabla.push(salidasObtenidas[salidasObtenidas.length - 1]);
+    });
+
+    SetVerResultados(true);
+    dataResultados = dataItem.MatrizInicial.map((fila, index) => {
+      return fila.concat(salidaTabla[index]);
     });
   };
 
@@ -209,12 +211,14 @@ const PaginaSimulacion = () => {
                     </p>
                   </div>
 
-                  <TableDrawer data={dataItem.MatrizInicial} />
+                  <TableDrawer
+                    data={dataItem.MatrizInicial}
+                    entradas={dataItem.NumEntradas}
+                    salidas={dataItem.NumSalidas}
+                  />
 
                   <div className="form__section mt-3">
-                    <h1 className="text-center mb-3">
-                      Cargar Datos de Entrada
-                    </h1>
+                    <h1 className="text-center ">Cargar Datos de Entrada</h1>
                     <div className="Subir_Datos">
                       <label className="label__form" htmlFor="user_avatar">
                         Subir datos
@@ -228,9 +232,23 @@ const PaginaSimulacion = () => {
                         type="file"
                       />
                     </div>
-                    <h1 className="text-center">Patrones a Simular</h1>
-                    <TableDrawer data={csvData} />
+                    <h1 className="text-center mt-3">Patrones a Simular</h1>
+                    <TableDrawer data={csvData} entradas={csvData[0].length} />
                   </div>
+                  {verResultados && (
+                    <div className="form__section mt-3">
+                      <h1 className="text-center ">
+                        Resultados de la Simulacion
+                      </h1>
+
+                      <TableDrawer
+                        data={dataResultados}
+                        entradas={dataItem.NumEntradas}
+                        salidas={dataItem.NumSalidas}
+                        salidasObtenida={salidaTabla[0].length}
+                      />
+                    </div>
+                  )}
 
                   <div className="flex gap-4">
                     <button
@@ -244,12 +262,12 @@ const PaginaSimulacion = () => {
                   </div>
                 </div>
               ) : (
-                <p className="message">Seleccione un Entrenamiento</p>
+                <p className="message">Seleccione una red</p>
               )}
             </div>
           </div>
         ) : (
-          <p className="message">Llene el formuario en "Datos de Entrada"</p>
+          <p className="message">Entrene una red de manera exitosa!"</p>
         )}
       </div>
     </div>
