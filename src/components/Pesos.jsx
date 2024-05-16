@@ -30,7 +30,7 @@ const calcularPesosNuevos = (
           case "Tanh":
             derivada = FuncAct.tanhDerivada(salidas[col]);
             break;
-          case "ReLU":
+          case "ReLu":
             derivada = FuncAct.reluDerivada(salidas[col]);
             break;
           case "Sin":

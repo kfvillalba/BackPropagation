@@ -26,7 +26,7 @@ const calcularUmbralesNuevos = (
         case "Tanh":
           derivada = FuncAct.tanhDerivada(salidas[index]);
           break;
-        case "ReLU":
+        case "ReLu":
           derivada = FuncAct.reluDerivada(salidas[index]);
           break;
         case "Sin":
