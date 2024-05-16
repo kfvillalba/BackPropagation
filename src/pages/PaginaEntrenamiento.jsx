@@ -18,6 +18,7 @@ import Umbral from "../components/Umbral";
 import EditIcon from "../assets/EditIcon";
 import Swal from "sweetalert2";
 import DeleteIcon from "../assets/DeleteIcon";
+import Grafica from "../components/Grafica";
 
 const PaginaEntrenamiento = () => {
   // firebase
@@ -85,6 +86,19 @@ const PaginaEntrenamiento = () => {
   let ERS = [];
   let pesos = [];
   let umbrales = [];
+  let iteracionesHistorial = [1, 2];
+  let erroresIteracionHistorial = [1, 2];
+
+  const data = {
+    labels: iteracionesHistorial,
+    datasets: [
+      {
+        label: "Error",
+        data: erroresIteracionHistorial,
+        borderColor: "rgb(75,192,192)",
+      },
+    ],
+  };
 
   // resultados del entrenamiento
 
@@ -92,7 +106,6 @@ const PaginaEntrenamiento = () => {
   let erroresLineales;
   let erroresNoLineales = [];
   let erroresPatron = [];
-  let erroresIteracion = [];
 
   //Funciones
   function convertirMatrizANumeros(matriz) {
@@ -141,7 +154,7 @@ const PaginaEntrenamiento = () => {
   function stop() {
     pause = true;
     count = 1;
-    guardarPesosUmbrales();
+    //guardarPesosUmbrales();
   }
   function start() {
     pause = false;
@@ -227,10 +240,12 @@ const PaginaEntrenamiento = () => {
           //
         });
         errorIteracion = Error.calcularErrorIteracion(erroresPatron);
-        console.log(errorIteracion);
         erroresPatron = [];
         erroresNoLineales = [];
         erroresLineales = [];
+        erroresIteracionHistorial.push(errorIteracion);
+        iteracionesHistorial.push(count);
+        console.log(errorIteracion);
 
         count++;
       }
@@ -289,29 +304,8 @@ const PaginaEntrenamiento = () => {
                   </div>
 
                   <TableDrawer data={dataItem.MatrizInicial} />
-                  {/* <div className="gap-4 flex  lg:flex-row form__section">
-                    <div className="flex flex-col lg:w-1/2 sm:w-screen">
-                      <h1>Pesos Iniciales</h1>
-                      <TableDrawer data={dataItem.PesosInicialesCapa0Capa1} />
-                    </div>
-                    <div className="flex flex-col lg:w-1/2 sm:w-full">
-                      <h1>Umbral Inicial</h1>
-                      <TableDrawer
-                        data={dataItem.UmbralesInicialesCapa0Capa1}
-                      />
-                    </div>
-                  </div>
-                  <div className="gap-4 flex  lg:flex-row mt-3 form__section">
-                    <div className="flex flex-col lg:w-1/2 sm:w-screen">
-                      <h1>Ultimos Pesos</h1>
-                      <TableDrawer data={ultimosPesos} />
-                    </div>
-                    <div className="flex flex-col lg:w-1/2 sm:w-full">
-                      <h1>Ultimo Umbral</h1>
-                      <TableDrawer data={ultimoUmbral} />
-                    </div>
-                  </div> */}
 
+                  <Grafica data={data} />
                   <div className="flex gap-4">
                     <button
                       onClick={() => {
